@@ -1,0 +1,103 @@
+:root {
+	--bg: #e0e0e0;
+	--card-bg: #f8f8f8;
+	--border: #333;
+	--value-bg: #eee;
+	--weight-bg: #111;
+	--highlight: #e74c3c;
+	--font: 'Segoe UI', sans-serif;
+  }
+
+  h1 {
+	text-align: center;
+	font-size: 2rem;
+  }
+
+  body {
+	margin: 0;
+	padding: 0;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	background-color: #d3d3d3;
+	color: #1c1c1c;
+  }
+
+  .container {
+	display: grid;
+	grid-template-columns: 1fr 1.5fr 1.5fr;
+	grid-template-areas:
+	  "items memory knapsack"
+	  "items harmony parameters";
+	gap: 1rem;
+	padding: 2rem;
+  }
+
+  .section {
+	background-color: #efefef;
+	border-radius: 1rem;
+	padding: 1rem;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .title {
+	font-size: 1.5rem;
+	font-weight: bold;
+	text-align: center;
+	margin-bottom: 1rem;
+  }
+
+  .items {
+	grid-area: items;
+	height: 100%;
+  }
+
+  .memory {
+	grid-area: memory;
+  }
+
+  .knapsack {
+	grid-area: knapsack;
+	text-align: center;
+  }
+
+  .harmony {
+	grid-area: harmony;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+  }
+
+  .parameters {
+	grid-area: parameters;
+  }
+
+  .item-box, .memory-box, .harmony-box, .knapsack-box {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	margin: 0.2rem;
+	background-color: white;
+	border: 2px solid black;
+	border-radius: 0.5rem;
+	width: 40px;
+	height: 60px;
+	justify-content: space-between;
+	font-weight: bold;
+  }
+
+  .harmony-box.invalid {
+	border: 2px solid red;
+  }
+
+  .slider-group {
+	margin-bottom: 1rem;
+  }
+
+  .slider-group label {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-weight: 600;
+  }
+
+  .slider-group input {
+	width: 100%;
+  }
