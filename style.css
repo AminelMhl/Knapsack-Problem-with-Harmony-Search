@@ -16,7 +16,7 @@ body {
 	margin: 0;
 	padding: 0;
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-	background-color: #d3d3d3;
+	background-color: #909090;
 	color: #1c1c1c;
 }
 
@@ -27,7 +27,7 @@ body {
 	grid-template-areas:
 		"items memory knapsack"
 		"items memory parameters"
-		"items harmony parameters"
+		"speed-control harmony parameters"
 		"space space parameters";
 	gap: 1rem;
 	padding: 2rem;
@@ -54,7 +54,7 @@ body {
 	grid-area: items;
 	display: flex;
 	flex-direction: column;
-	height: 60vh;
+	height: 45vh;
 	overflow-y: auto;
 	font-family: 'Montserrat Alternates';
 }
@@ -81,7 +81,21 @@ body {
 	justify-content: center;
 	font-family: 'Montserrat Alternates';
 }
-
+#speed-control {
+	display: flex;
+	align-items: center;
+	font-size: 1rem;
+}
+  
+#speed-slider {
+	margin: 0 10px;
+	width: 150px;
+}
+  
+#speed-value {
+	font-weight: bold;
+}
+  
 .parameters {
 	grid-area: parameters;
 	height: 36vh;
