@@ -3,12 +3,42 @@ const numItems = 14;
 const maxWeight = 20;
 
 // Parameters
-const memorySize = 5;
-const maxNoImprovement = 300;
+const memorySize= document.getElementById('memory-size');
+const memorySizeValueDisplay = document.getElementById('memory-size-value');
+
+function updateMemorySizeValue() {
+  const memorySizeValue = memorySize.value;
+  memorySizeValueDisplay.textContent = `${memorySizeValue}`;
+}
+memorySize.addEventListener('input', updateMemorySizeValue);
+
+const maxNoImprovement= document.getElementById('max-no-improvement');
+const maxNoImprovementValueDisplay = document.getElementById('max-no-improvement-value');
+
+function updateMaxNoImprovementValue() {
+  const maxNoImprovementValue = maxNoImprovement.value;
+  maxNoImprovementValueDisplay.textContent = `${maxNoImprovementValue}`;
+}
+maxNoImprovement.addEventListener('input', updateMaxNoImprovementValue);
 
 // Harmony Memory Consideration Rate and Pitch Adjustment Rate
-const HMCR = 0.9; // Harmony Memory Consideration Rate
-const PAR = 0.3;  // Pitch Adjustment Rate
+const PAR= document.getElementById('par');
+const PARValueDisplay = document.getElementById('par-value');
+
+function updatePARValue() {
+  const PARValue = PAR.value;
+  PARValueDisplay.textContent = `${PARValue/100}`;
+}
+PAR.addEventListener('input', updatePARValue);
+
+const HMCR= document.getElementById('hmcr');
+const HMCRValueDisplay = document.getElementById('hmcr-value');
+
+function updateHMCRValue() {
+  const HMCRValue = HMCR.value;
+  HMCRValueDisplay.textContent = `${HMCRValue/100}`;
+}
+HMCR.addEventListener('input', updateHMCRValue);
 
 // Items array
 let items = [];
@@ -89,13 +119,13 @@ function selectHarmonyFromMemory() {
     const randomVal = Math.random();
     let harmony;
   
-    if (randomVal < HMCR) {
+    if (randomVal < HMCR.value / 100) {
       // Select from memory (exploitation)
       const originalHarmony = memory[Math.floor(Math.random() * memory.length)];
       harmony = [...originalHarmony]; // 🛠️ Create a true copy!
 
       // Apply pitch adjustment with a probability of PAR
-      if (Math.random() < PAR) {
+      if (Math.random() < PAR.value / 100) {
         let pitchAdjustedHarmony = [...harmony]; // 🛠️ copy before adjusting
         pitchAdjustedHarmony = applyPitchAdjustment(pitchAdjustedHarmony);
 
@@ -222,7 +252,7 @@ speedSlider.addEventListener('input', updateSpeedValue);
 function startHarmonySearch() {
     // Initialize memory with unique random harmonies
     memory = [];
-    for (let i = 0; i < memorySize; i++) {
+    for (let i = 0; i < memorySize.value; i++) {
       let newHarmony = generateUniqueRandomHarmony();
       memory.push(newHarmony);
     }
@@ -282,7 +312,7 @@ function startHarmonySearch() {
         }
 
         // Stop if no improvement for a long time
-        if (noImprovement >= maxNoImprovement) {
+        if (noImprovement >= maxNoImprovement.value) {
           clearInterval(searchInterval);
 
           // Find best solution in memory
