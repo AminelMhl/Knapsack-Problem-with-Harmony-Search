@@ -6,6 +6,10 @@ const maxWeight = 20;
 const memorySize = 5;
 const maxNoImprovement = 300;
 
+// Harmony Memory Consideration Rate and Pitch Adjustment Rate
+const HMCR = 0.9; // Harmony Memory Consideration Rate
+const PAR = 0.3;  // Pitch Adjustment Rate
+
 // Items array
 let items = [];
 let memory = [];
@@ -64,41 +68,84 @@ document.addEventListener('DOMContentLoaded', () => {
       maxCapacityElement.textContent = maxWeight;
     }
 });
+
+// Function to apply pitch adjustment (small modification to the harmony)
+function applyPitchAdjustment(pitchAdjustedHarmony) {
+    const index = Math.floor(Math.random() * pitchAdjustedHarmony.length);
+    pitchAdjustedHarmony[index] = 1 - pitchAdjustedHarmony[index]; // Flip the selected bit
+
+    const { totalValue, totalWeight } = evaluateHarmony(pitchAdjustedHarmony);
+
+    if (totalWeight > maxWeight) {
+      return null; // 🚀 return null immediately
+    }
   
+    return pitchAdjustedHarmony;
+}
+
+
+// Function to select a harmony based on HMCR and apply pitch adjustment if needed
+function selectHarmonyFromMemory() {
+    const randomVal = Math.random();
+    let harmony;
+  
+    if (randomVal < HMCR) {
+      // Select from memory (exploitation)
+      const originalHarmony = memory[Math.floor(Math.random() * memory.length)];
+      harmony = [...originalHarmony]; // 🛠️ Create a true copy!
+
+      // Apply pitch adjustment with a probability of PAR
+      if (Math.random() < PAR) {
+        let pitchAdjustedHarmony = [...harmony]; // 🛠️ copy before adjusting
+        pitchAdjustedHarmony = applyPitchAdjustment(pitchAdjustedHarmony);
+
+        if (pitchAdjustedHarmony) {
+            harmony = pitchAdjustedHarmony;
+        } else {
+          harmony = generateUniqueRandomHarmony();
+        }
+      }
+    } else {
+      // Generate a new random harmony (exploration)
+      harmony = generateUniqueRandomHarmony();
+    }
+  
+    return harmony;
+}
+
 
 function renderMemory() {
-    const memoryList = document.getElementById('memory-list');
-    memoryList.innerHTML = ''; // Clear previous memory list
-  
-    // Sort memory by total value (best harmony first)
-    memory.sort((a, b) => {
-      const aValue = evaluateHarmony(a).totalValue;
-      const bValue = evaluateHarmony(b).totalValue;
-      return bValue - aValue; // Descending order: highest value first
+  const memoryList = document.getElementById('memory-list');
+  memoryList.innerHTML = ''; // Clear previous memory list
+
+  // Sort memory by total value (best harmony first)
+  memory.sort((a, b) => {
+    const aValue = evaluateHarmony(a).totalValue;
+    const bValue = evaluateHarmony(b).totalValue;
+    return bValue - aValue; // Descending order: highest value first
+  });
+
+  // Render the sorted harmonies
+  memory.forEach(harmony => {
+    const harmonyRow = document.createElement('div');
+    harmonyRow.style.display = 'flex';
+    harmonyRow.style.marginBottom = '0.5rem';
+
+    harmony.forEach((bit, idx) => {
+      if (bit === 1) {
+        const itemBox = document.createElement('div');
+        itemBox.className = 'item-box';
+        itemBox.innerHTML = `
+          <div>${items[idx].value}</div>
+          <div>${items[idx].weight}</div>
+        `;
+        harmonyRow.appendChild(itemBox);
+      }
     });
-  
-    // Render the sorted harmonies
-    memory.forEach(harmony => {
-      const harmonyRow = document.createElement('div');
-      harmonyRow.style.display = 'flex';
-      harmonyRow.style.marginBottom = '0.5rem';
-  
-      harmony.forEach((bit, idx) => {
-        if (bit === 1) {
-          const itemBox = document.createElement('div');
-          itemBox.className = 'item-box';
-          itemBox.innerHTML = `
-            <div>${items[idx].value}</div>
-            <div>${items[idx].weight}</div>
-          `;
-          harmonyRow.appendChild(itemBox);
-        }
-      });
-  
-      memoryList.appendChild(harmonyRow);
-    });
-  }
-  
+
+    memoryList.appendChild(harmonyRow);
+  });
+}
 
 function renderHarmony(harmony, highlight = null) {
   const harmonyList = document.getElementById('harmony-list');
@@ -158,7 +205,7 @@ function generateUniqueRandomHarmony() {
     } while (evaluateHarmony(newHarmony).totalWeight > maxWeight || isHarmonyInMemory(newHarmony)); // Check if valid and not in memory
     return newHarmony;
 }
-  
+
 // Get the slider element and the display value
 const speedSlider = document.getElementById('speed-slider');
 const speedValueDisplay = document.getElementById('speed-value');
@@ -179,36 +226,37 @@ function startHarmonySearch() {
       let newHarmony = generateUniqueRandomHarmony();
       memory.push(newHarmony);
     }
-  
+
     renderMemory();
-  
+
     let noImprovement = 0;
     let bestValue = -Infinity;
     let bestHarmony = null;
-  
+
     // Store the reference to the interval
     let searchInterval;
-  
+
     // Function to start the interval based on current slider value
     function startInterval() {
       const iterationSpeed = parseInt(speedSlider.value, 10); // Get the current speed from the slider
-  
+
       searchInterval = setInterval(() => {
-        const newHarmony = generateUniqueRandomHarmony(); // Ensure it's unique
+        // Select a harmony using HMCR and possibly adjust with PAR
+        const newHarmony = selectHarmonyFromMemory();
+
         const { totalValue: newValue, totalWeight: newWeight } = evaluateHarmony(newHarmony);
-  
-        // Immediately ignore invalid harmonies
+
         if (newWeight > maxWeight) {
           renderHarmony(newHarmony, 'red');
           return;
         }
-  
+
         renderHarmony(newHarmony);
-  
+
         // Find the worst harmony
         let worstIdx = -1;
         let worstValue = Infinity;
-  
+
         memory.forEach((harmony, idx) => {
           const { totalValue } = evaluateHarmony(harmony);
           if (totalValue < worstValue) {
@@ -216,25 +264,27 @@ function startHarmonySearch() {
             worstIdx = idx;
           }
         });
-  
+
         if (newValue > worstValue) {
+            if (!isHarmonyInMemory(newHarmony)) {
           // Highlight new harmony in green
-          renderHarmony(newHarmony, 'green');
-  
-          setTimeout(() => {
-            memory[worstIdx] = newHarmony;
-            renderMemory(); // Re-render the memory after the new harmony is added
-          }, 300); // green glow for 300ms
-  
-          noImprovement = 0; // reset the counter when improvement is found
+                renderHarmony(newHarmony, 'green');
+
+                setTimeout(() => {
+                    memory[worstIdx] = newHarmony;
+                    renderMemory(); // Re-render the memory after the new harmony is added
+                }, 300); // green glow for 300ms
+
+                noImprovement = 0; // reset the counter when improvement is found
+            }
         } else {
           noImprovement++;
         }
-  
+
         // Stop if no improvement for a long time
         if (noImprovement >= maxNoImprovement) {
           clearInterval(searchInterval);
-  
+
           // Find best solution in memory
           memory.forEach(harmony => {
             const { totalValue } = evaluateHarmony(harmony);
@@ -243,7 +293,7 @@ function startHarmonySearch() {
               bestHarmony = harmony;
             }
           });
-  
+
           // Render the best solution
           if (bestHarmony) {
             renderKnapsack(bestHarmony);
@@ -251,10 +301,10 @@ function startHarmonySearch() {
         }
       }, iterationSpeed);
     }
-  
+
     // Start the first interval based on the current slider value
     startInterval();
-  
+
     // Listen for slider changes and adjust the interval speed dynamically
     speedSlider.addEventListener('input', () => {
       const iterationSpeed = parseInt(speedSlider.value, 10); // Get the updated speed from the slider
@@ -262,13 +312,11 @@ function startHarmonySearch() {
       startInterval(); // Restart the interval with the new speed
       updateSpeedValue(); // Update the displayed speed
     });
-  
+
     updateSpeedValue(); // Update the displayed speed value when the function starts
 }
-  
-  
-  
-  // Helper function to check if harmony is already in memory
+
+// Helper function to check if harmony is already in memory
 function isHarmonyInMemory(harmony) {
     return memory.some(existingHarmony => {
       return existingHarmony.every((bit, idx) => bit === harmony[idx]);
